@@ -1,4 +1,4 @@
-const dropZone = document.getElementById("drop-zone");
+const dropZone = document.getElementById("dropZone");
 
 dropZone.addEventListener("dragover", (event) => {
     event.preventDefault();
