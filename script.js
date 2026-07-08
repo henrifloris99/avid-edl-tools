@@ -1,3 +1,6 @@
+console.log("SCRIPT LOADED");
+console.log(document.getElementById("dropZone"));
+
 const dropZone = document.getElementById("dropZone");
 
 dropZone.addEventListener("dragover", (event) => {
