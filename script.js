@@ -1,11 +1,41 @@
-const sampleEDL = `
-000003  BL                               V     C         00:00:19:01 01:00:32:01 01:00:51:02
-*T+: RECRE: DEBRA'S STORAGE UNIT JOHN'S THINGS ARE IN BOXES OR ON TABLES
-000004  BL                               V     C         00:00:02:04 01:00:51:02 01:00:53:06
-000005  BL                               V     C         00:00:06:15 01:00:53:06 01:00:59:21
-*T+: RECRE: DEBRA'S STORAGE UNIT PHOTO OF JOHN'S SCRUBS, THEN MUGSHOT
-`;
+const dropZone = document.getElementById("drop-zone");
 
-const results = parseEDL(sampleEDL);
+dropZone.addEventListener("dragover", (event) => {
+    event.preventDefault();
+    dropZone.style.border = "2px solid blue";
+});
 
-console.log(results);
+dropZone.addEventListener("dragleave", () => {
+    dropZone.style.border = "";
+});
+
+dropZone.addEventListener("drop", (event) => {
+    event.preventDefault();
+
+    const file = event.dataTransfer.files[0];
+
+    if (!file) {
+        return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = function(e) {
+        const edlText = e.target.result;
+
+        console.log("Loaded EDL:");
+        console.log(edlText.substring(0,500));
+
+        const results = parseEDL(edlText);
+
+        console.log("Parsed Events:");
+        console.log(results);
+
+        dropZone.innerHTML = `
+            <h3>EDL Loaded</h3>
+            <p>${results.length} slug events found</p>
+        `;
+    };
+
+    reader.readAsText(file);
+});
