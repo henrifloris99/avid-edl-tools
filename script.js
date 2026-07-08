@@ -1,44 +1,46 @@
-console.log("SCRIPT LOADED");
-console.log(document.getElementById("dropZone"));
+document.addEventListener("DOMContentLoaded", () => {
 
-const dropZone = document.getElementById("dropZone");
+    const dropZone = document.getElementById("dropZone");
 
-dropZone.addEventListener("dragover", (event) => {
-    event.preventDefault();
-    dropZone.style.border = "2px solid blue";
-});
+    dropZone.addEventListener("dragover", (event) => {
+        event.preventDefault();
+        dropZone.style.border = "2px solid blue";
+    });
 
-dropZone.addEventListener("dragleave", () => {
-    dropZone.style.border = "";
-});
+    dropZone.addEventListener("dragleave", () => {
+        dropZone.style.border = "";
+    });
 
-dropZone.addEventListener("drop", (event) => {
-    event.preventDefault();
+    dropZone.addEventListener("drop", (event) => {
+        event.preventDefault();
 
-    const file = event.dataTransfer.files[0];
+        const file = event.dataTransfer.files[0];
 
-    if (!file) {
-        return;
-    }
+        if (!file) {
+            return;
+        }
 
-    const reader = new FileReader();
+        const reader = new FileReader();
 
-    reader.onload = function(e) {
-        const edlText = e.target.result;
+        reader.onload = function(e) {
 
-        console.log("Loaded EDL:");
-        console.log(edlText.substring(0,500));
+            const edlText = e.target.result;
 
-        const results = parseEDL(edlText);
+            console.log("Loaded EDL:");
+            console.log(edlText.substring(0,500));
 
-        console.log("Parsed Events:");
-        console.log(results);
+            const results = parseEDL(edlText);
 
-        dropZone.innerHTML = `
-            <h3>EDL Loaded</h3>
-            <p>${results.length} slug events found</p>
-        `;
-    };
+            console.log("Parsed Events:");
+            console.log(results);
 
-    reader.readAsText(file);
+            dropZone.innerHTML = `
+                <h3>EDL Loaded</h3>
+                <p>${results.length} slug events found</p>
+            `;
+        };
+
+        reader.readAsText(file);
+    });
+
 });
