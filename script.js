@@ -1,5 +1,40 @@
 let results = [];
 
+function displayResults(events) {
+
+    const resultsDiv = document.getElementById("results");
+
+    let table = `
+        <table border="1">
+            <tr>
+                <th>Event</th>
+                <th>Duration</th>
+                <th>Record In</th>
+                <th>Record Out</th>
+                <th>Slug</th>
+            </tr>
+    `;
+
+    events.forEach(event => {
+
+        table += `
+            <tr>
+                <td>${event.eventNumber}</td>
+                <td>${event.duration}</td>
+                <td>${event.recordIn}</td>
+                <td>${event.recordOut}</td>
+                <td>${event.slug}</td>
+            </tr>
+        `;
+
+    });
+
+    table += `</table>`;
+
+    resultsDiv.innerHTML = table;
+}
+
+
 document.addEventListener("DOMContentLoaded", () => {
 
     const dropZone = document.getElementById("dropZone");
@@ -35,6 +70,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
             console.log("Parsed Events:");
             console.log(results);
+
+            displayResults(results);
 
             dropZone.innerHTML = `
                 <h3>EDL Loaded</h3>
