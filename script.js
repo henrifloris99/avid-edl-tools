@@ -1,3 +1,5 @@
+let results = [];
+
 document.addEventListener("DOMContentLoaded", () => {
 
     const dropZone = document.getElementById("dropZone");
@@ -29,7 +31,7 @@ document.addEventListener("DOMContentLoaded", () => {
             console.log("Loaded EDL:");
             console.log(edlText.substring(0,500));
 
-            const results = parseEDL(edlText);
+            results = parseEDL(edlText);
 
             console.log("Parsed Events:");
             console.log(results);
