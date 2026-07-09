@@ -38,17 +38,22 @@ function displayResults(events) {
 document.addEventListener("DOMContentLoaded", () => {
 
     const dropZone = document.getElementById("dropZone");
+    const exportButton = document.getElementById("exportButton");
+
 
     dropZone.addEventListener("dragover", (event) => {
         event.preventDefault();
         dropZone.style.border = "2px solid blue";
     });
 
+
     dropZone.addEventListener("dragleave", () => {
         dropZone.style.border = "";
     });
 
+
     dropZone.addEventListener("drop", (event) => {
+
         event.preventDefault();
 
         const file = event.dataTransfer.files[0];
@@ -57,29 +62,46 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
+
         const reader = new FileReader();
+
 
         reader.onload = function(e) {
 
             const edlText = e.target.result;
 
-            console.log("Loaded EDL:");
-            console.log(edlText.substring(0,500));
 
             results = parseEDL(edlText);
+
 
             console.log("Parsed Events:");
             console.log(results);
 
+
             displayResults(results);
+
 
             dropZone.innerHTML = `
                 <h3>EDL Loaded</h3>
                 <p>${results.length} slug events found</p>
             `;
+
+
+            exportButton.style.display = "block";
+
         };
 
+
         reader.readAsText(file);
+
     });
+
+
+    exportButton.addEventListener("click", () => {
+
+        exportExcel(results);
+
+    });
+
 
 });
