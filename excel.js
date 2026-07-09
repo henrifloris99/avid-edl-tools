@@ -1,4 +1,4 @@
-function exportExcel(events) {
+window.exportExcel = function(events) {
 
     const worksheetData = [
         [
@@ -39,4 +39,4 @@ function exportExcel(events) {
         "EDL_Slug_Report.xlsx"
     );
 
-}
+};
