@@ -7,22 +7,22 @@ function displayResults(events) {
     let table = `
         <table border="1">
             <tr>
-                <th>Event</th>
-                <th>Duration</th>
+                <th>#</th>
                 <th>Record In</th>
                 <th>Record Out</th>
+                <th>Duration</th>
                 <th>Slug</th>
             </tr>
     `;
 
-    events.forEach(event => {
+    events.forEach((event, index) => {
 
         table += `
             <tr>
-                <td>${event.eventNumber}</td>
-                <td>${event.duration}</td>
+                <td>${index + 1}</td>
                 <td>${event.recordIn}</td>
                 <td>${event.recordOut}</td>
+                <td>${event.duration}</td>
                 <td>${event.slug}</td>
             </tr>
         `;
