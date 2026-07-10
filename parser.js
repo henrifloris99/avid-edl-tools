@@ -4,7 +4,8 @@ class EDLEvent {
 
         this.eventNumber = eventNumber;
 
-        this.reel = reel || "";
+        // BL is an Avid placeholder, not useful metadata
+        this.reel = (reel === "BL") ? "" : (reel || "");
 
         this.sourceIn = sourceIn || "";
         this.sourceOut = sourceOut || "";
@@ -33,7 +34,6 @@ function parseEDL(edlText) {
 
     const lines = edlText.split(/\r?\n/);
 
-
     let currentEvent = null;
 
 
@@ -50,19 +50,19 @@ function parseEDL(edlText) {
 
 
 
-
         /*
-            ARCHIVE FILE 32 FORMAT
+            UNIVERSAL AVID EVENT FORMAT
 
-            Example:
-            000001  DJD_0309_IMG... V C
-            01:00:05:06 01:00:05:11
-            01:00:19:05 01:00:19:10
+            Archive:
+            000001 REEL V C SOURCE-IN SOURCE-OUT RECORD-IN RECORD-OUT
+
+            Slug:
+            000003 BL V C SOURCE-IN SOURCE-OUT RECORD-IN RECORD-OUT
         */
 
 
         let eventMatch = line.match(
-            /^(\d+)\s+(\S+)\s+V\s+C\s+(\d\d:\d\d:\d\d:\d\d)\s+(\d\d:\d\d:\d\d:\d\d)\s+(\d\d:\d\d:\d\d:\d\d)\s+(\d\d:\d\d:\d\d:\d\d)/
+            /^(\d+)\s+(\S+)\s+V\s+C\s+(\d\d:\d\d:\d\d:\d\d)\s+(\d\d:\d\d:\d\d:\d\d)\s+(\d\d:\d\d:\d\d:\d\d)\s+(\d\d:\d\d:\d\d:\d\d)\s*$/
         );
 
 
@@ -72,75 +72,22 @@ function parseEDL(edlText) {
 
             currentEvent = new EDLEvent(
 
-                eventMatch[1],
+                eventMatch[1],   // event number
+                eventMatch[2],   // reel
 
-                eventMatch[2],
+                eventMatch[3],   // source in
+                eventMatch[4],   // source out
 
-                eventMatch[3],
-                eventMatch[4],
-
-                eventMatch[5],
-                eventMatch[6]
+                eventMatch[5],   // record in
+                eventMatch[6]    // record out
 
             );
-
 
 
             currentEvent.duration = calculateDuration(
                 eventMatch[3],
                 eventMatch[4]
             );
-
-
-
-            continue;
-
-        }
-
-
-
-
-
-        /*
-            ORIGINAL SLUG EDL FORMAT
-
-            Example:
-            000003  BL V C
-            00:00:19:01
-            01:00:32:01
-            01:00:51:02
-        */
-
-
-        eventMatch = line.match(
-            /^(\d+)\s+\S+\s+V\s+C\s+(\d\d:\d\d:\d\d:\d\d)\s+(\d\d:\d\d:\d\d:\d\d)\s+(\d\d:\d\d:\d\d:\d\d)\s*$/
-        );
-
-
-
-        if (eventMatch) {
-
-
-            currentEvent = new EDLEvent(
-
-                eventMatch[1],
-
-                "",
-
-                "",
-
-                "",
-
-                eventMatch[3],
-
-                eventMatch[4]
-
-            );
-
-
-
-            currentEvent.duration = eventMatch[2];
-
 
 
             continue;
@@ -155,6 +102,7 @@ function parseEDL(edlText) {
             AUX DATA
 
             Example:
+
             M2 DJD_0668_FTG...
         */
 
@@ -177,7 +125,8 @@ function parseEDL(edlText) {
             CLIP NAME
 
             Example:
-            *FROM CLIP NAME: filename
+
+            *FROM CLIP NAME: filename.JPG
         */
 
 
@@ -191,13 +140,10 @@ function parseEDL(edlText) {
                 );
 
 
-
             events.push(currentEvent);
 
 
-
             currentEvent = null;
-
 
 
             continue;
@@ -212,7 +158,8 @@ function parseEDL(edlText) {
             SLUG
 
             Example:
-            *T+: RECRE: ...
+
+            * T+: RECRE: STORAGE UNIT...
         */
 
 
@@ -221,9 +168,10 @@ function parseEDL(edlText) {
 
             currentEvent.slug =
                 line.replace(
-                    /^"?\*T\+:\s*/,
+                    /^.*\*T\+:\s*/,
                     ""
                 )
+                .replace(/^"/, "")
                 .replace(/"$/, "");
 
 
@@ -231,10 +179,10 @@ function parseEDL(edlText) {
             events.push(currentEvent);
 
 
-
             currentEvent = null;
 
 
+            continue;
 
         }
 
@@ -246,7 +194,6 @@ function parseEDL(edlText) {
     return events;
 
 }
-
 
 
 
