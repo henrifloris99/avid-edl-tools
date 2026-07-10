@@ -1,76 +1,62 @@
-window.exportExcel = function(events) {
+window.exportExcel = function(events, selectedFields) {
 
-    const worksheetData = [
-        [
-            "#",
-            "Source In",
-            "Source Out",
-            "Record In",
-            "Record Out",
-            "Duration",
-            "Slug"
-        ]
-    ];
+
+    const headers = {
+        eventNumber: "Event Number",
+        sourceIn: "Source In",
+        sourceOut: "Source Out",
+        recordIn: "Record In",
+        recordOut: "Record Out",
+        duration: "Duration",
+        slug: "Slug"
+    };
+
+
+    const worksheetData = [];
+
+
+    worksheetData.push(
+        selectedFields.map(field => headers[field])
+    );
 
 
     events.forEach((event, index) => {
 
-        worksheetData.push([
-            index + 1,
-            event.sourceIn,
-            event.sourceOut,
-            event.recordIn,
-            event.recordOut,
-            event.duration,
-            event.slug
-        ]);
+        worksheetData.push(
+
+            selectedFields.map(field => {
+
+                if (field === "eventNumber") {
+                    return event.eventNumber;
+                }
+
+                return event[field] || "";
+
+            })
+
+        );
 
     });
+
 
 
     const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
 
 
-    // Freeze header row
-    worksheet["!freeze"] = {
-        xSplit: 0,
-        ySplit: 1
-    };
-
-
-    // Add filters
     worksheet["!autofilter"] = {
         ref: worksheet["!ref"]
     };
 
 
-    // Auto-size columns
-    worksheet["!cols"] = [
-        { width: 8 },   // #
-        { width: 15 },  // Source In
-        { width: 15 },  // Source Out
-        { width: 15 },  // Record In
-        { width: 15 },  // Record Out
-        { width: 15 },  // Duration
-        { width: 70 }   // Slug
-    ];
+    worksheet["!cols"] = selectedFields.map(field => {
 
-
-    // Wrap slug text
-    for (let cell in worksheet) {
-
-        if (cell.startsWith("G")) {
-
-            worksheet[cell].s = {
-                alignment: {
-                    wrapText: true,
-                    vertical: "top"
-                }
-            };
-
+        if (field === "slug") {
+            return { width: 70 };
         }
 
-    }
+        return { width: 18 };
+
+    });
 
 
     const workbook = XLSX.utils.book_new();
@@ -79,13 +65,13 @@ window.exportExcel = function(events) {
     XLSX.utils.book_append_sheet(
         workbook,
         worksheet,
-        "EDL Slugs"
+        "EDL Export"
     );
 
 
     XLSX.writeFile(
         workbook,
-        "EDL_Slug_Report.xlsx"
+        "EDL_Report.xlsx"
     );
 
 };
