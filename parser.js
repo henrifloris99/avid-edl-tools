@@ -46,8 +46,6 @@ function parseEDL(edlText, edlType) {
     }
 
 
-    console.log("No EDL type selected");
-
     return [];
 
 }
@@ -73,9 +71,7 @@ function parseArchiveEDL(edlText) {
         line = line.trim();
 
 
-        if (!line) {
-            continue;
-        }
+        if (!line) continue;
 
 
 
@@ -118,14 +114,11 @@ function parseArchiveEDL(edlText) {
 
         if (line.startsWith("M2") && currentEvent) {
 
-
             currentEvent.auxData = line;
-
 
             continue;
 
         }
-
 
 
 
@@ -142,11 +135,8 @@ function parseArchiveEDL(edlText) {
 
             events.push(currentEvent);
 
-
             currentEvent = null;
 
-
-            continue;
 
         }
 
@@ -182,9 +172,7 @@ function parseSlugEDL(edlText) {
         line = line.trim();
 
 
-        if (!line) {
-            continue;
-        }
+        if (!line) continue;
 
 
 
@@ -226,16 +214,18 @@ function parseSlugEDL(edlText) {
 
 
 
-        if (line.includes("*T+:") && currentEvent) {
+        // Handles both:
+        // *T+: SLUG
+        // * T+: SLUG
+
+        if (/^\*\s*T\+:/.test(line) && currentEvent) {
 
 
             currentEvent.slug =
                 line.replace(
-                    /^.*\*T\+:\s*/,
+                    /^\*\s*T\+:\s*/,
                     ""
-                )
-                .replace(/^"/, "")
-                .replace(/"$/, "");
+                );
 
 
 
@@ -286,7 +276,6 @@ function calculateDuration(start, end) {
     if (frames < 0) {
 
         frames += 30;
-
         seconds--;
 
     }
@@ -296,7 +285,6 @@ function calculateDuration(start, end) {
     if (seconds < 0) {
 
         seconds += 60;
-
         minutes--;
 
     }
@@ -306,7 +294,6 @@ function calculateDuration(start, end) {
     if (minutes < 0) {
 
         minutes += 60;
-
         hours--;
 
     }
