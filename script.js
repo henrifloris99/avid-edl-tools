@@ -112,6 +112,7 @@ function buildFieldSelector(fields) {
 
 
 
+
 function displayResults(events) {
 
 
@@ -259,7 +260,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
-            results = parseEDL(edlText);
+            const selectedEDLType = document.querySelector(
+                'input[name="edlType"]:checked'
+            ).value;
+
+
+
+            console.log("Selected EDL Type:");
+            console.log(selectedEDLType);
+
+
+
+            results = parseEDL(
+                edlText,
+                selectedEDLType
+            );
 
 
 
