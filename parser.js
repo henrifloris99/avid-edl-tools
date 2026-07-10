@@ -243,6 +243,13 @@ function parseSlugEDL(edlText) {
     }
 
 
+    // Renumber events sequentially for Slug EDLs
+    events.forEach((event, index) => {
+
+        event.eventNumber = String(index + 1);
+
+    });
+
 
     return events;
 
