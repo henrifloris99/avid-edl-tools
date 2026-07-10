@@ -1,74 +1,44 @@
 class EDLEvent {
-    constructor(eventNumber, sourceIn, sourceOut, recordIn, recordOut) {
+
+    constructor(eventNumber, reel, sourceIn, sourceOut, recordIn, recordOut) {
+
         this.eventNumber = eventNumber;
+
+        this.reel = reel;
+
         this.sourceIn = sourceIn;
         this.sourceOut = sourceOut;
+
         this.recordIn = recordIn;
         this.recordOut = recordOut;
+
         this.duration = "";
+
+        this.clipName = "";
+
         this.slug = "";
+
+        this.auxData = "";
+
     }
+
 }
 
-
-function timecodeToFrames(timecode) {
-
-    const parts = timecode.split(":");
-
-    const hours = Number(parts[0]);
-    const minutes = Number(parts[1]);
-    const seconds = Number(parts[2]);
-    const frames = Number(parts[3]);
-
-    // Assumes 30fps for duration calculation
-    return (
-        ((hours * 60 + minutes) * 60 + seconds) * 30
-    ) + frames;
-}
-
-
-function framesToTimecode(frames) {
-
-    const fps = 30;
-
-    const hours = Math.floor(frames / (fps * 3600));
-    frames %= fps * 3600;
-
-    const minutes = Math.floor(frames / (fps * 60));
-    frames %= fps * 60;
-
-    const seconds = Math.floor(frames / fps);
-    const remainingFrames = frames % fps;
-
-    return [
-        hours.toString().padStart(2, "0"),
-        minutes.toString().padStart(2, "0"),
-        seconds.toString().padStart(2, "0"),
-        remainingFrames.toString().padStart(2, "0")
-    ].join(":");
-}
-
-
-function calculateDuration(recordIn, recordOut) {
-
-    const durationFrames =
-        timecodeToFrames(recordOut) -
-        timecodeToFrames(recordIn);
-
-    return framesToTimecode(durationFrames);
-}
 
 
 function parseEDL(edlText) {
+
 
     const events = [];
 
     const lines = edlText.split(/\r?\n/);
 
+
     let currentEvent = null;
 
 
     for (let line of lines) {
+
 
         line = line.trim();
 
@@ -78,85 +48,177 @@ function parseEDL(edlText) {
         }
 
 
-        // Find all timecodes on an event line
-        const timecodes = line.match(/\d\d:\d\d:\d\d:\d\d/g);
+
+        // EVENT LINE
+        const eventMatch = line.match(
+            /^(\d+)\s+(\S+)\s+V\s+C\s+(\d\d:\d\d:\d\d:\d\d)\s+(\d\d:\d\d:\d\d:\d\d)\s+(\d\d:\d\d:\d\d:\d\d)\s+(\d\d:\d\d:\d\d:\d\d)/
+        );
 
 
-        if (/^\d+/.test(line) && timecodes) {
 
-            const eventNumberMatch = line.match(/^(\d+)/);
-
-            if (!eventNumberMatch) {
-                continue;
-            }
-
-            const eventNumber = eventNumberMatch[1];
+        if (eventMatch) {
 
 
-            if (timecodes.length === 3) {
+            const sourceIn = eventMatch[3];
+            const sourceOut = eventMatch[4];
 
-                // Older Avid EDL format:
-                // Duration, Record In, Record Out
-
-                currentEvent = new EDLEvent(
-                    eventNumber,
-                    "",
-                    "",
-                    timecodes[1],
-                    timecodes[2]
-                );
-
-                currentEvent.duration = timecodes[0];
-
-            }
+            const recordIn = eventMatch[5];
+            const recordOut = eventMatch[6];
 
 
-            else if (timecodes.length >= 4) {
+            currentEvent = new EDLEvent(
 
-                // Standard CMX3600:
-                // Source In, Source Out, Record In, Record Out
+                eventMatch[1],
+                eventMatch[2],
 
-                currentEvent = new EDLEvent(
-                    eventNumber,
-                    timecodes[0],
-                    timecodes[1],
-                    timecodes[2],
-                    timecodes[3]
-                );
+                sourceIn,
+                sourceOut,
 
-                currentEvent.duration = calculateDuration(
-                    timecodes[2],
-                    timecodes[3]
-                );
+                recordIn,
+                recordOut
 
-            }
+            );
+
+
+            currentEvent.duration = calculateDuration(
+                sourceIn,
+                sourceOut
+            );
 
 
             continue;
+
         }
 
 
 
-        // Handles:
-        // *T+:
-        // * T+:
-        // "*T+:"
 
-        const slugMatch = line.match(/^"?\*\s*T\+:\s*(.*)"?$/);
+        // M2 AUXILIARY DATA
+        if (line.startsWith("M2") && currentEvent) {
+
+            currentEvent.auxData = line;
+
+            continue;
+
+        }
 
 
-        if (slugMatch && currentEvent) {
 
-            currentEvent.slug = slugMatch[1];
+
+        // CLIP NAME
+        if (line.includes("*FROM CLIP NAME:") && currentEvent) {
+
+
+            currentEvent.clipName =
+                line.replace(
+                    /^\*FROM CLIP NAME:\s*/,
+                    ""
+                );
+
 
             events.push(currentEvent);
 
+
             currentEvent = null;
+
+
+            continue;
+
         }
+
+
+
+
+        // SLUG SUPPORT FROM OLD EDLs
+        if (line.includes("*T+:") && currentEvent) {
+
+
+            currentEvent.slug =
+                line.replace(
+                    /^"?\*T\+:\s*/,
+                    ""
+                )
+                .replace(/"$/, "");
+
+
+
+            events.push(currentEvent);
+
+
+            currentEvent = null;
+
+
+        }
+
 
     }
 
 
     return events;
+
+}
+
+
+
+
+
+function calculateDuration(start, end) {
+
+
+    const s = start.split(":").map(Number);
+
+    const e = end.split(":").map(Number);
+
+
+
+    let frames = e[3] - s[3];
+
+    let seconds = e[2] - s[2];
+
+    let minutes = e[1] - s[1];
+
+    let hours = e[0] - s[0];
+
+
+
+    if (frames < 0) {
+
+        frames += 30;
+
+        seconds--;
+
+    }
+
+
+    if (seconds < 0) {
+
+        seconds += 60;
+
+        minutes--;
+
+    }
+
+
+    if (minutes < 0) {
+
+        minutes += 60;
+
+        hours--;
+
+    }
+
+
+
+    return (
+
+        String(hours).padStart(2,"0")
+        + ":" +
+        String(minutes).padStart(2,"0")
+        + ":" +
+        String(seconds).padStart(2,"0")
+        + ":" +
+        String(frames).padStart(2,"0")
+
+    );
 
 }
