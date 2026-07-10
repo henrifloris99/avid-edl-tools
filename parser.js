@@ -20,37 +20,68 @@ function parseEDL(edlText) {
 
         line = line.trim();
 
-        // Skip empty lines
-        if (line.length === 0)
-            continue;
-
-        // EVENT LINE
-        // Example:
-        // 000003 BL V C 00:00:19:01 01:00:32:01 01:00:51:02
-
-        const eventMatch = line.match(
-            /^(\d+)\s+\S+.*?(\d\d:\d\d:\d\d:\d\d)\s+(\d\d:\d\d:\d\d:\d\d)\s+(\d\d:\d\d:\d\d:\d\d)$/
-        );
-
-        if (eventMatch) {
-
-            currentEvent = new EDLEvent(
-                eventMatch[1], // Event Number
-                eventMatch[2], // Duration
-                eventMatch[3], // Record In
-                eventMatch[4]  // Record Out
-            );
-
+        if (line.length === 0) {
             continue;
         }
 
-        // TITLE LINE
-        if (line.includes("*T+:") && currentEvent) {
+        // ----------------------------
+        // EVENT LINE
+        // Supports BOTH:
+        //
+        // 000003 BL ... 00:00:19:01 01:00:32:01 01:00:51:02
+        //
+        // and
+        //
+        // 003 BL ... 00:00:00:00 00:00:19:01 01:00:32:01 01:00:51:02
+        // ----------------------------
 
-            let slug = line.replace(/^"?\*T\+:\s*/, "");
-            slug = slug.replace(/"$/, "");
+        const timecodes = line.match(/\d\d:\d\d:\d\d:\d\d/g);
 
-            currentEvent.slug = slug;
+        if (/^\d+/.test(line) && timecodes) {
+
+            const eventNumber = line.match(/^(\d+)/)[1];
+
+            if (timecodes.length === 3) {
+
+                // Old export style
+                currentEvent = new EDLEvent(
+                    eventNumber,
+                    timecodes[0],
+                    timecodes[1],
+                    timecodes[2]
+                );
+
+                continue;
+            }
+
+            if (timecodes.length >= 4) {
+
+                // New export style
+                currentEvent = new EDLEvent(
+                    eventNumber,
+                    timecodes[1], // Source Out = Duration
+                    timecodes[2], // Record In
+                    timecodes[3]  // Record Out
+                );
+
+                continue;
+            }
+        }
+
+        // ----------------------------
+        // TITLE / SLUG LINE
+        //
+        // Supports:
+        // *T+:
+        // * T+:
+        // " *T+: "
+        // ----------------------------
+
+        const slugMatch = line.match(/^"?\*\s*T\+:\s*(.*)"?$/);
+
+        if (slugMatch && currentEvent) {
+
+            currentEvent.slug = slugMatch[1];
 
             events.push(currentEvent);
 
