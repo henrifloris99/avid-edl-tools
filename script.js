@@ -36,8 +36,7 @@ function displayResults(events) {
     });
 
 
-    table += `</table>`;
-
+    table += "</table>";
 
     resultsDiv.innerHTML = table;
 
@@ -47,11 +46,14 @@ function displayResults(events) {
 
 document.addEventListener("DOMContentLoaded", () => {
 
+
     const dropZone = document.getElementById("dropZone");
     const exportButton = document.getElementById("exportButton");
+    const fieldSelector = document.getElementById("fieldSelector");
 
 
-    dropZone.addEventListener("dragover", (event) => {
+
+    dropZone.addEventListener("dragover", event => {
 
         event.preventDefault();
 
@@ -69,7 +71,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
-    dropZone.addEventListener("drop", (event) => {
+    dropZone.addEventListener("drop", event => {
+
 
         event.preventDefault();
 
@@ -82,11 +85,13 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
 
+
         const reader = new FileReader();
 
 
 
         reader.onload = function(e) {
+
 
             const edlText = e.target.result;
 
@@ -94,7 +99,6 @@ document.addEventListener("DOMContentLoaded", () => {
             results = parseEDL(edlText);
 
 
-            console.log("Parsed Events:");
             console.log(results);
 
 
@@ -108,12 +112,18 @@ document.addEventListener("DOMContentLoaded", () => {
             `;
 
 
+
+            fieldSelector.style.display = "block";
+
             exportButton.style.display = "block";
+
 
         };
 
 
+
         reader.readAsText(file);
+
 
     });
 
@@ -121,7 +131,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
     exportButton.addEventListener("click", () => {
 
-        exportExcel(results);
+
+        const checkedFields = Array.from(
+            document.querySelectorAll("#fieldSelector input:checked")
+        )
+        .map(input => input.value);
+
+
+
+        exportExcel(results, checkedFields);
+
 
     });
 
