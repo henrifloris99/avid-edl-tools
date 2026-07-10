@@ -1,5 +1,6 @@
 let results = [];
 
+
 function displayResults(events) {
 
     const resultsDiv = document.getElementById("results");
@@ -8,6 +9,8 @@ function displayResults(events) {
         <table border="1">
             <tr>
                 <th>#</th>
+                <th>Source In</th>
+                <th>Source Out</th>
                 <th>Record In</th>
                 <th>Record Out</th>
                 <th>Duration</th>
@@ -15,11 +18,14 @@ function displayResults(events) {
             </tr>
     `;
 
+
     events.forEach((event, index) => {
 
         table += `
             <tr>
                 <td>${index + 1}</td>
+                <td>${event.sourceIn}</td>
+                <td>${event.sourceOut}</td>
                 <td>${event.recordIn}</td>
                 <td>${event.recordOut}</td>
                 <td>${event.duration}</td>
@@ -29,10 +35,14 @@ function displayResults(events) {
 
     });
 
+
     table += `</table>`;
 
+
     resultsDiv.innerHTML = table;
+
 }
+
 
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -42,21 +52,30 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     dropZone.addEventListener("dragover", (event) => {
+
         event.preventDefault();
+
         dropZone.style.border = "2px solid blue";
+
     });
+
 
 
     dropZone.addEventListener("dragleave", () => {
+
         dropZone.style.border = "";
+
     });
+
 
 
     dropZone.addEventListener("drop", (event) => {
 
         event.preventDefault();
 
+
         const file = event.dataTransfer.files[0];
+
 
         if (!file) {
             return;
@@ -64,6 +83,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
         const reader = new FileReader();
+
 
 
         reader.onload = function(e) {
@@ -81,6 +101,7 @@ document.addEventListener("DOMContentLoaded", () => {
             displayResults(results);
 
 
+
             dropZone.innerHTML = `
                 <h3>EDL Loaded</h3>
                 <p>${results.length} slug events found</p>
@@ -95,6 +116,7 @@ document.addEventListener("DOMContentLoaded", () => {
         reader.readAsText(file);
 
     });
+
 
 
     exportButton.addEventListener("click", () => {
