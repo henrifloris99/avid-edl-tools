@@ -27,7 +27,36 @@ class EDLEvent {
 
 
 
-function parseEDL(edlText) {
+
+
+function parseEDL(edlText, edlType) {
+
+
+    if (edlType === "archive") {
+
+        return parseArchiveEDL(edlText);
+
+    }
+
+
+    if (edlType === "slug") {
+
+        return parseSlugEDL(edlText);
+
+    }
+
+
+    console.log("No EDL type selected");
+
+    return [];
+
+}
+
+
+
+
+
+function parseArchiveEDL(edlText) {
 
 
     const events = [];
@@ -50,19 +79,9 @@ function parseEDL(edlText) {
 
 
 
-        /*
-            UNIVERSAL AVID EVENT FORMAT
 
-            Archive:
-            000001 REEL V C SOURCE-IN SOURCE-OUT RECORD-IN RECORD-OUT
-
-            Slug:
-            000003 BL V C SOURCE-IN SOURCE-OUT RECORD-IN RECORD-OUT
-        */
-
-
-        let eventMatch = line.match(
-            /^(\d+)\s+(\S+)\s+V\s+C\s+(\d\d:\d\d:\d\d:\d\d)\s+(\d\d:\d\d:\d\d:\d\d)\s+(\d\d:\d\d:\d\d:\d\d)\s+(\d\d:\d\d:\d\d:\d\d)\s*$/
+        const eventMatch = line.match(
+            /^(\d+)\s+(\S+)\s+V\s+C\s+(\d\d:\d\d:\d\d:\d\d)\s+(\d\d:\d\d:\d\d:\d\d)\s+(\d\d:\d\d:\d\d:\d\d)\s+(\d\d:\d\d:\d\d:\d\d)/
         );
 
 
@@ -72,14 +91,14 @@ function parseEDL(edlText) {
 
             currentEvent = new EDLEvent(
 
-                eventMatch[1],   // event number
-                eventMatch[2],   // reel
+                eventMatch[1],
+                eventMatch[2],
 
-                eventMatch[3],   // source in
-                eventMatch[4],   // source out
+                eventMatch[3],
+                eventMatch[4],
 
-                eventMatch[5],   // record in
-                eventMatch[6]    // record out
+                eventMatch[5],
+                eventMatch[6]
 
             );
 
@@ -97,16 +116,6 @@ function parseEDL(edlText) {
 
 
 
-
-        /*
-            AUX DATA
-
-            Example:
-
-            M2 DJD_0668_FTG...
-        */
-
-
         if (line.startsWith("M2") && currentEvent) {
 
 
@@ -119,15 +128,6 @@ function parseEDL(edlText) {
 
 
 
-
-
-        /*
-            CLIP NAME
-
-            Example:
-
-            *FROM CLIP NAME: filename.JPG
-        */
 
 
         if (line.includes("*FROM CLIP NAME:") && currentEvent) {
@@ -151,16 +151,79 @@ function parseEDL(edlText) {
         }
 
 
+    }
 
 
 
-        /*
-            SLUG
+    return events;
 
-            Example:
+}
 
-            * T+: RECRE: STORAGE UNIT...
-        */
+
+
+
+
+
+
+function parseSlugEDL(edlText) {
+
+
+    const events = [];
+
+    const lines = edlText.split(/\r?\n/);
+
+    let currentEvent = null;
+
+
+
+    for (let line of lines) {
+
+
+        line = line.trim();
+
+
+        if (!line) {
+            continue;
+        }
+
+
+
+
+        const eventMatch = line.match(
+            /^(\d+)\s+(\S+)\s+V\s+C\s+(\d\d:\d\d:\d\d:\d\d)\s+(\d\d:\d\d:\d\d:\d\d)\s+(\d\d:\d\d:\d\d:\d\d)\s+(\d\d:\d\d:\d\d:\d\d)/
+        );
+
+
+
+        if (eventMatch) {
+
+
+            currentEvent = new EDLEvent(
+
+                eventMatch[1],
+                eventMatch[2],
+
+                eventMatch[3],
+                eventMatch[4],
+
+                eventMatch[5],
+                eventMatch[6]
+
+            );
+
+
+            currentEvent.duration = calculateDuration(
+                eventMatch[3],
+                eventMatch[4]
+            );
+
+
+            continue;
+
+        }
+
+
+
 
 
         if (line.includes("*T+:") && currentEvent) {
@@ -194,6 +257,8 @@ function parseEDL(edlText) {
     return events;
 
 }
+
+
 
 
 
