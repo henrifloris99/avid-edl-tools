@@ -44,15 +44,22 @@ function parseEDL(edlText) {
         line = line.trim();
 
 
-
-        if (line.length === 0) {
+        if (!line) {
             continue;
         }
 
 
 
-        // ARCHIVE / FILE 32 FORMAT
-        // 000001 REEL V C SOURCE-IN SOURCE-OUT RECORD-IN RECORD-OUT
+
+        /*
+            ARCHIVE FILE 32 FORMAT
+
+            Example:
+            000001  DJD_0309_IMG... V C
+            01:00:05:06 01:00:05:11
+            01:00:19:05 01:00:19:10
+        */
+
 
         let eventMatch = line.match(
             /^(\d+)\s+(\S+)\s+V\s+C\s+(\d\d:\d\d:\d\d:\d\d)\s+(\d\d:\d\d:\d\d:\d\d)\s+(\d\d:\d\d:\d\d:\d\d)\s+(\d\d:\d\d:\d\d:\d\d)/
@@ -66,6 +73,7 @@ function parseEDL(edlText) {
             currentEvent = new EDLEvent(
 
                 eventMatch[1],
+
                 eventMatch[2],
 
                 eventMatch[3],
@@ -77,10 +85,12 @@ function parseEDL(edlText) {
             );
 
 
+
             currentEvent.duration = calculateDuration(
                 eventMatch[3],
                 eventMatch[4]
             );
+
 
 
             continue;
@@ -90,11 +100,20 @@ function parseEDL(edlText) {
 
 
 
-        // ORIGINAL SLUG EDL FORMAT
-        // 000003 BL V C DURATION RECORD-IN RECORD-OUT
+
+        /*
+            ORIGINAL SLUG EDL FORMAT
+
+            Example:
+            000003  BL V C
+            00:00:19:01
+            01:00:32:01
+            01:00:51:02
+        */
+
 
         eventMatch = line.match(
-            /^(\d+)\s+\S+.*?(\d\d:\d\d:\d\d:\d\d)\s+(\d\d:\d\d:\d\d:\d\d)\s+(\d\d:\d\d:\d\d:\d\d)$/
+            /^(\d+)\s+\S+\s+V\s+C\s+(\d\d:\d\d:\d\d:\d\d)\s+(\d\d:\d\d:\d\d:\d\d)\s+(\d\d:\d\d:\d\d:\d\d)\s*$/
         );
 
 
@@ -109,17 +128,21 @@ function parseEDL(edlText) {
                 "",
 
                 "",
-                eventMatch[2],
+
+                "",
 
                 eventMatch[3],
+
                 eventMatch[4]
 
             );
 
 
+
             currentEvent.duration = eventMatch[2];
 
 
+
             continue;
 
         }
@@ -127,11 +150,20 @@ function parseEDL(edlText) {
 
 
 
-        // AUX DATA
+
+        /*
+            AUX DATA
+
+            Example:
+            M2 DJD_0668_FTG...
+        */
+
 
         if (line.startsWith("M2") && currentEvent) {
 
+
             currentEvent.auxData = line;
+
 
             continue;
 
@@ -140,7 +172,14 @@ function parseEDL(edlText) {
 
 
 
-        // CLIP NAME
+
+        /*
+            CLIP NAME
+
+            Example:
+            *FROM CLIP NAME: filename
+        */
+
 
         if (line.includes("*FROM CLIP NAME:") && currentEvent) {
 
@@ -152,10 +191,13 @@ function parseEDL(edlText) {
                 );
 
 
+
             events.push(currentEvent);
 
 
+
             currentEvent = null;
+
 
 
             continue;
@@ -165,7 +207,14 @@ function parseEDL(edlText) {
 
 
 
-        // SLUG
+
+        /*
+            SLUG
+
+            Example:
+            *T+: RECRE: ...
+        */
+
 
         if (line.includes("*T+:") && currentEvent) {
 
@@ -182,7 +231,9 @@ function parseEDL(edlText) {
             events.push(currentEvent);
 
 
+
             currentEvent = null;
+
 
 
         }
@@ -195,6 +246,7 @@ function parseEDL(edlText) {
     return events;
 
 }
+
 
 
 
@@ -222,22 +274,27 @@ function calculateDuration(start, end) {
     if (frames < 0) {
 
         frames += 30;
+
         seconds--;
 
     }
 
 
+
     if (seconds < 0) {
 
         seconds += 60;
+
         minutes--;
 
     }
 
 
+
     if (minutes < 0) {
 
         minutes += 60;
+
         hours--;
 
     }
