@@ -7,8 +7,11 @@ function displayResults(events) {
 
     let table = `
         <table border="1">
+
             <tr>
                 <th>#</th>
+                <th>Reel</th>
+                <th>Clip Name</th>
                 <th>Source In</th>
                 <th>Source Out</th>
                 <th>Record In</th>
@@ -23,20 +26,35 @@ function displayResults(events) {
 
         table += `
             <tr>
+
                 <td>${index + 1}</td>
-                <td>${event.sourceIn}</td>
-                <td>${event.sourceOut}</td>
-                <td>${event.recordIn}</td>
-                <td>${event.recordOut}</td>
-                <td>${event.duration}</td>
-                <td>${event.slug}</td>
+
+                <td>${event.reel || ""}</td>
+
+                <td>${event.clipName || ""}</td>
+
+                <td>${event.sourceIn || ""}</td>
+
+                <td>${event.sourceOut || ""}</td>
+
+                <td>${event.recordIn || ""}</td>
+
+                <td>${event.recordOut || ""}</td>
+
+                <td>${event.duration || ""}</td>
+
+                <td>${event.slug || ""}</td>
+
             </tr>
         `;
 
     });
 
 
-    table += "</table>";
+    table += `
+        </table>
+    `;
+
 
     resultsDiv.innerHTML = table;
 
@@ -48,12 +66,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     const dropZone = document.getElementById("dropZone");
+
     const exportButton = document.getElementById("exportButton");
+
     const fieldSelector = document.getElementById("fieldSelector");
 
 
 
-    dropZone.addEventListener("dragover", event => {
+    dropZone.addEventListener("dragover", (event) => {
 
         event.preventDefault();
 
@@ -71,8 +91,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
-    dropZone.addEventListener("drop", event => {
-
+    dropZone.addEventListener("drop", (event) => {
 
         event.preventDefault();
 
@@ -85,9 +104,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
 
-
         const reader = new FileReader();
-
 
 
         reader.onload = function(e) {
@@ -99,7 +116,10 @@ document.addEventListener("DOMContentLoaded", () => {
             results = parseEDL(edlText);
 
 
+            console.log("Parsed Events:");
+
             console.log(results);
+
 
 
             displayResults(results);
@@ -108,18 +128,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
             dropZone.innerHTML = `
                 <h3>EDL Loaded</h3>
-                <p>${results.length} slug events found</p>
+                <p>${results.length} events found</p>
             `;
 
 
 
-            fieldSelector.style.display = "block";
+            if (fieldSelector) {
 
-            exportButton.style.display = "block";
+                fieldSelector.style.display = "block";
+
+            }
+
+
+
+            if (exportButton) {
+
+                exportButton.style.display = "block";
+
+            }
 
 
         };
-
 
 
         reader.readAsText(file);
@@ -129,20 +158,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
-    exportButton.addEventListener("click", () => {
+    if (exportButton) {
+
+        exportButton.addEventListener("click", () => {
 
 
-        const checkedFields = Array.from(
-            document.querySelectorAll("#fieldSelector input:checked")
-        )
-        .map(input => input.value);
+            const checkedFields = Array.from(
+                document.querySelectorAll("#fieldSelector input:checked")
+            )
+            .map(input => input.value);
 
 
 
-        exportExcel(results, checkedFields);
+            exportExcel(results, checkedFields);
 
 
-    });
+        });
+
+    }
 
 
 });
