@@ -1,14 +1,129 @@
 let results = [];
 
+let detectedFields = [];
+
+
+const fieldLabels = {
+
+    eventNumber: "Event Number",
+
+    reel: "Reel",
+
+    clipName: "Clip Name",
+
+    sourceIn: "Source In",
+
+    sourceOut: "Source Out",
+
+    recordIn: "Record In",
+
+    recordOut: "Record Out",
+
+    duration: "Duration",
+
+    slug: "Slug",
+
+    auxData: "Aux Data"
+
+};
+
+
+
+function detectFields(events) {
+
+
+    const fields = [];
+
+
+    Object.keys(fieldLabels).forEach(field => {
+
+
+        const exists = events.some(event => {
+
+            return event[field] && event[field].trim() !== "";
+
+        });
+
+
+        if (exists) {
+
+            fields.push(field);
+
+        }
+
+
+    });
+
+
+    return fields;
+
+}
+
+
+
+
+function buildFieldSelector(fields) {
+
+
+    const selector = document.getElementById("fieldSelector");
+
+
+    if (!selector) {
+        return;
+    }
+
+
+
+    selector.innerHTML = `
+
+        <h3>Excel Export Fields</h3>
+
+    `;
+
+
+
+    fields.forEach(field => {
+
+
+        selector.innerHTML += `
+
+            <label>
+
+                <input 
+                    type="checkbox"
+                    value="${field}"
+                    checked
+                >
+
+                ${fieldLabels[field]}
+
+            </label>
+
+            <br>
+
+        `;
+
+
+    });
+
+
+
+}
+
+
 
 function displayResults(events) {
 
+
     const resultsDiv = document.getElementById("results");
 
+
     let table = `
+
         <table border="1">
 
             <tr>
+
                 <th>#</th>
                 <th>Reel</th>
                 <th>Clip Name</th>
@@ -18,13 +133,18 @@ function displayResults(events) {
                 <th>Record Out</th>
                 <th>Duration</th>
                 <th>Slug</th>
+
             </tr>
+
     `;
+
 
 
     events.forEach((event, index) => {
 
+
         table += `
+
             <tr>
 
                 <td>${index + 1}</td>
@@ -46,19 +166,28 @@ function displayResults(events) {
                 <td>${event.slug || ""}</td>
 
             </tr>
+
         `;
+
 
     });
 
 
+
     table += `
+
         </table>
+
     `;
+
 
 
     resultsDiv.innerHTML = table;
 
+
 }
+
+
 
 
 
@@ -73,38 +202,54 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
-    dropZone.addEventListener("dragover", (event) => {
+    dropZone.addEventListener("dragover", event => {
+
 
         event.preventDefault();
 
+
         dropZone.style.border = "2px solid blue";
 
+
     });
+
 
 
 
     dropZone.addEventListener("dragleave", () => {
 
+
         dropZone.style.border = "";
+
 
     });
 
 
 
-    dropZone.addEventListener("drop", (event) => {
+
+    dropZone.addEventListener("drop", event => {
+
 
         event.preventDefault();
+
 
 
         const file = event.dataTransfer.files[0];
 
 
+
         if (!file) {
+
             return;
+
         }
 
 
+
+
         const reader = new FileReader();
+
+
 
 
         reader.onload = function(e) {
@@ -113,7 +258,9 @@ document.addEventListener("DOMContentLoaded", () => {
             const edlText = e.target.result;
 
 
+
             results = parseEDL(edlText);
+
 
 
             console.log("Parsed Events:");
@@ -122,13 +269,33 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
+
+            detectedFields = detectFields(results);
+
+
+
+            console.log("Detected Fields:");
+
+            console.log(detectedFields);
+
+
+
+
             displayResults(results);
 
 
 
+            buildFieldSelector(detectedFields);
+
+
+
+
             dropZone.innerHTML = `
+
                 <h3>EDL Loaded</h3>
+
                 <p>${results.length} events found</p>
+
             `;
 
 
@@ -148,34 +315,48 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
 
+
         };
 
 
+
         reader.readAsText(file);
+
 
 
     });
 
 
 
+
+
     if (exportButton) {
+
 
         exportButton.addEventListener("click", () => {
 
 
+
             const checkedFields = Array.from(
+
                 document.querySelectorAll("#fieldSelector input:checked")
+
             )
+
             .map(input => input.value);
+
 
 
 
             exportExcel(results, checkedFields);
 
 
+
         });
 
+
     }
+
 
 
 });
