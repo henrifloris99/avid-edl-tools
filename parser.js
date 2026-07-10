@@ -4,13 +4,13 @@ class EDLEvent {
 
         this.eventNumber = eventNumber;
 
-        this.reel = reel;
+        this.reel = reel || "";
 
-        this.sourceIn = sourceIn;
-        this.sourceOut = sourceOut;
+        this.sourceIn = sourceIn || "";
+        this.sourceOut = sourceOut || "";
 
-        this.recordIn = recordIn;
-        this.recordOut = recordOut;
+        this.recordIn = recordIn || "";
+        this.recordOut = recordOut || "";
 
         this.duration = "";
 
@@ -37,10 +37,12 @@ function parseEDL(edlText) {
     let currentEvent = null;
 
 
+
     for (let line of lines) {
 
 
         line = line.trim();
+
 
 
         if (line.length === 0) {
@@ -49,8 +51,10 @@ function parseEDL(edlText) {
 
 
 
-        // EVENT LINE
-        const eventMatch = line.match(
+        // ARCHIVE / FILE 32 FORMAT
+        // 000001 REEL V C SOURCE-IN SOURCE-OUT RECORD-IN RECORD-OUT
+
+        let eventMatch = line.match(
             /^(\d+)\s+(\S+)\s+V\s+C\s+(\d\d:\d\d:\d\d:\d\d)\s+(\d\d:\d\d:\d\d:\d\d)\s+(\d\d:\d\d:\d\d:\d\d)\s+(\d\d:\d\d:\d\d:\d\d)/
         );
 
@@ -59,30 +63,23 @@ function parseEDL(edlText) {
         if (eventMatch) {
 
 
-            const sourceIn = eventMatch[3];
-            const sourceOut = eventMatch[4];
-
-            const recordIn = eventMatch[5];
-            const recordOut = eventMatch[6];
-
-
             currentEvent = new EDLEvent(
 
                 eventMatch[1],
                 eventMatch[2],
 
-                sourceIn,
-                sourceOut,
+                eventMatch[3],
+                eventMatch[4],
 
-                recordIn,
-                recordOut
+                eventMatch[5],
+                eventMatch[6]
 
             );
 
 
             currentEvent.duration = calculateDuration(
-                sourceIn,
-                sourceOut
+                eventMatch[3],
+                eventMatch[4]
             );
 
 
@@ -93,7 +90,45 @@ function parseEDL(edlText) {
 
 
 
-        // M2 AUXILIARY DATA
+        // ORIGINAL SLUG EDL FORMAT
+        // 000003 BL V C DURATION RECORD-IN RECORD-OUT
+
+        eventMatch = line.match(
+            /^(\d+)\s+\S+.*?(\d\d:\d\d:\d\d:\d\d)\s+(\d\d:\d\d:\d\d:\d\d)\s+(\d\d:\d\d:\d\d:\d\d)$/
+        );
+
+
+
+        if (eventMatch) {
+
+
+            currentEvent = new EDLEvent(
+
+                eventMatch[1],
+
+                "",
+
+                "",
+                eventMatch[2],
+
+                eventMatch[3],
+                eventMatch[4]
+
+            );
+
+
+            currentEvent.duration = eventMatch[2];
+
+
+            continue;
+
+        }
+
+
+
+
+        // AUX DATA
+
         if (line.startsWith("M2") && currentEvent) {
 
             currentEvent.auxData = line;
@@ -106,6 +141,7 @@ function parseEDL(edlText) {
 
 
         // CLIP NAME
+
         if (line.includes("*FROM CLIP NAME:") && currentEvent) {
 
 
@@ -129,7 +165,8 @@ function parseEDL(edlText) {
 
 
 
-        // SLUG SUPPORT FROM OLD EDLs
+        // SLUG
+
         if (line.includes("*T+:") && currentEvent) {
 
 
@@ -152,6 +189,7 @@ function parseEDL(edlText) {
 
 
     }
+
 
 
     return events;
@@ -184,7 +222,6 @@ function calculateDuration(start, end) {
     if (frames < 0) {
 
         frames += 30;
-
         seconds--;
 
     }
@@ -193,7 +230,6 @@ function calculateDuration(start, end) {
     if (seconds < 0) {
 
         seconds += 60;
-
         minutes--;
 
     }
@@ -202,7 +238,6 @@ function calculateDuration(start, end) {
     if (minutes < 0) {
 
         minutes += 60;
-
         hours--;
 
     }
