@@ -18,28 +18,117 @@
 
 <p>Select EDL Type:</p>
 
+
 <div id="edlTypeSelector">
 
-    <label>
-        <input 
-            type="radio" 
-            name="edlType" 
-            value="slug"
-            checked
-        >
-        Slug EDL
-    </label>
+
+    <div class="tooltip">
+
+        <label>
+            <input 
+                type="radio" 
+                name="edlType" 
+                value="slug"
+                checked
+            >
+            Slug EDL
+        </label>
+
+
+        <div class="tooltipText">
+
+            <strong>Avid List Tool Settings</strong>
+            <br><br>
+
+            <strong>EDL Type:</strong> CMX_3600
+            <br><br>
+
+            <strong>List Options:</strong>
+            <br>
+            Picture - Black Edits and Title Text
+            <br>
+            Both Picture and Sound - Clip Names and Clip Comments
+            <br><br>
+
+            <strong>Formatting:</strong>
+            <br>
+            Source TC: Start
+            <br>
+            Record TC: TC1
+            <br>
+            Reel ID Type: Source File/Tape
+            <br>
+            Sort Mode: A (Record In)
+            <br>
+            Starting Event Number: 1
+            <br>
+            Starting TC: Sequence TC
+            <br>
+            Tape or File Name Truncation: END
+            <br><br>
+
+            Extracts:
+            <br>
+            * T+: slug/title text markers
+
+        </div>
+
+    </div>
+
 
     <br>
 
-    <label>
-        <input 
-            type="radio" 
-            name="edlType" 
-            value="archive"
-        >
-        Archive EDL
-    </label>
+
+    <div class="tooltip">
+
+        <label>
+            <input 
+                type="radio" 
+                name="edlType" 
+                value="archive"
+            >
+            Archive EDL
+        </label>
+
+
+        <div class="tooltipText">
+
+            <strong>Avid List Tool Settings</strong>
+            <br><br>
+
+            <strong>EDL Type:</strong> File_32
+            <br><br>
+
+            <strong>List Options:</strong>
+            <br>
+            Both Picture and Sound - Clip Names
+            <br><br>
+
+            <strong>Formatting:</strong>
+            <br>
+            Source TC: Start
+            <br>
+            Record TC: TC1
+            <br>
+            Reel ID Type: Source File/Tape
+            <br>
+            Sort Mode: A (Record In)
+            <br>
+            Starting Event Number: 1
+            <br>
+            Starting TC: Sequence TC
+            <br>
+            Tape or File Name Truncation: END
+            <br><br>
+
+            Extracts:
+            <br>
+            *FROM CLIP NAME metadata
+
+        </div>
+
+    </div>
+
 
 </div>
 
@@ -49,6 +138,7 @@
 
 <p>Drop an Avid EDL anywhere on this page.</p>
 
+
 <div id="dropZone">
 
 Drop EDL Here
@@ -56,9 +146,11 @@ Drop EDL Here
 </div>
 
 
+
 <div id="fieldSelector" style="display:none;">
 
 <h3>Excel Export Fields</h3>
+
 
 <label>
 <input type="checkbox" value="eventNumber" checked>
@@ -67,12 +159,14 @@ Event Number
 
 <br>
 
+
 <label>
 <input type="checkbox" value="sourceIn" checked>
 Source In
 </label>
 
 <br>
+
 
 <label>
 <input type="checkbox" value="sourceOut" checked>
@@ -81,12 +175,14 @@ Source Out
 
 <br>
 
+
 <label>
 <input type="checkbox" value="recordIn" checked>
 Record In
 </label>
 
 <br>
+
 
 <label>
 <input type="checkbox" value="recordOut" checked>
@@ -95,6 +191,7 @@ Record Out
 
 <br>
 
+
 <label>
 <input type="checkbox" value="duration" checked>
 Duration
@@ -102,12 +199,15 @@ Duration
 
 <br>
 
+
 <label>
 <input type="checkbox" value="slug" checked>
 Slug
 </label>
 
+
 </div>
+
 
 
 <button id="exportButton" style="display:none;">
@@ -115,7 +215,9 @@ Export Excel
 </button>
 
 
+
 <div id="results"></div>
+
 
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
