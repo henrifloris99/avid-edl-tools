@@ -49,6 +49,8 @@ color:#777;
 
     visibility: hidden;
 
+    opacity: 0;
+
     width: 360px;
 
     background-color: #333;
@@ -63,7 +65,7 @@ color:#777;
 
     position: absolute;
 
-    z-index: 10;
+    z-index: 999;
 
     top: 25px;
 
@@ -73,11 +75,15 @@ color:#777;
 
     line-height: 1.4;
 
+    transition: opacity 0.2s;
+
 }
 
 
 .tooltip:hover .tooltipText {
 
     visibility: visible;
+
+    opacity: 1;
 
 }
